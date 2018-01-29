@@ -55,6 +55,8 @@
 #include "sensor.h"
 #include "transmit.h"
 #include "data.h"
+#include "debug_led.h"
+#include "ResetFunction.h"
 
 
 /* USER CODE END Includes */
@@ -68,6 +70,8 @@ IRDA_HandleTypeDef hirda1;
 UART_HandleTypeDef huart2;
 
 osThreadId defaultTaskHandle;
+
+GPIO_InitTypeDef GPIO_InitStruct;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -147,6 +151,12 @@ int main(void)
   MX_USART1_IRDA_Init();
   MX_I2C1_Init();
 
+
+
+  /* Configure Event interrupt*/
+  NVIC_EnableIRQ(EXTI4_15_IRQn);
+  NVIC_SetPriority(EXTI4_15_IRQn,0);
+
   /* USER CODE BEGIN 2 */
   //osMessageQId dataWriteQueue = osMessageCreate(osMessageQ(dataWritequeue), NULL);
   //osMessageQId dataReadQueue = osMessageCreate(osMessageQ(dataReadqueue), NULL);
@@ -156,7 +166,7 @@ int main(void)
   ReadEventCompleteQueue = osMessageCreate(osMessageQ(ReadEventCompleteQueue), NULL);
 
   //perform clear all
-  osMessagePut(dataEventqueue, eDBAction_ClearAll, osWaitForever);
+//  osMessagePut(dataEventqueue, eDBAction_ClearAll, osWaitForever);
 
   /* USER CODE END 2 */
 
@@ -165,6 +175,8 @@ int main(void)
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
+
+
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
@@ -179,14 +191,26 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  HAL_UART_Transmit(&huart2,"HELLO WORLD",sizeof("HELLO WORLD"),200);
+  HAL_UART_Transmit(&huart2,(uint8_t *)"HELLO WORLD",sizeof("HELLO WORLD"),200);
 
-  osThreadDef(Task1, SensorTask, osPriorityRealtime, 0, 128);
+  GPIO_InitStruct.Pin = LD2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+
+  HeartBeat_LED_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+//  osThreadDef(Task1, SensorTask, osPriorityRealtime, 0, 128);
+  osThreadDef(Task1, SensorTask, osPriorityAboveNormal, 0, 128);
   Task1Handle = osThreadCreate(osThread(Task1), NULL);
   osThreadDef(Task2, DBTask, osPriorityNormal, 0, 128);
   Task2Handle = osThreadCreate(osThread(Task2), NULL);
   osThreadDef(Task3, TransmitTask, osPriorityNormal, 0, (128*2));
   Task3Handle = osThreadCreate(osThread(Task3), NULL);
+
+  ResetTaskInit();
+
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -420,7 +444,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 

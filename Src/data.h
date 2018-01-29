@@ -1,4 +1,7 @@
 //data.h
+#ifndef _DATA_H
+#define _DATA_H
+
 #define FLASH_USER_START_ADDR   0x08080000   /* Start @ of user Flash area */
 #define FLASH_USER_END_ADDR     0x080807FF   /* End @ of user Flash area */
 
@@ -24,3 +27,4 @@ enum
 
 
 
+#endif
