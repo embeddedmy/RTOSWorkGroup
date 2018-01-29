@@ -42,7 +42,7 @@ static void task_EepromManager ( void const* argument ){
 			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin,GPIO_PIN_SET);
 
 			//TODO: Implement Mutex before EEPROM Clean is carried out
-			osMutexWait(MutexEeprom, osWaitForever);
+			osMutexWait(MutexEeprom, osWaitForever);                        //cheng: redundant mutex
 
 			osMessagePut(dataEventqueue, eDBAction_ClearAll, osWaitForever);
 //			EEPROM_Clean();

@@ -82,7 +82,7 @@ void TransmitTask(void const * argument)
 
 		do
 		{
-			osMessagePut(dataEventqueue, eDBAction_Read, osWaitForever);
+			osMessagePut(dataEventqueue, eDBAction_Read, osWaitForever);    //cheng: i would think a short timeout is better, instead of osWaitForever, avoid permanent blocking, changing the 5seconds interval
 			evt = osMessageGet(ReadEventCompleteQueue, osWaitForever);  // wait for message
 			if (evt.status == osEventMessage) {
 				//read completed

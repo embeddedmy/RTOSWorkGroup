@@ -42,7 +42,7 @@ void SensorTask(void const * argument)
 	while(1)
 	{
 		data = osMailAlloc(dataWritequeue, 0);
-		SetSensorData(data);
+		SetSensorData(data);    //cheng: no error check on 'data' pointer
 		send_to_queue(data);
 		osDelay(1000);
 	}

@@ -161,7 +161,7 @@ void DBTask(void const * argument)
 		{
 			case eDBAction_Write:
 				HAL_UART_Transmit(&huart2,"write",sizeof("write"),200);
-				while(1)
+				while(1)            //cheng:why need while(1) here??
 				{		
 					evt = osMailGet(dataWritequeue, 0);
 					if(evt.status==osEventMail)
@@ -179,9 +179,11 @@ void DBTask(void const * argument)
 			case eDBAction_Read:
 				HAL_UART_Transmit(&huart2,"read",sizeof("read"),200);
 				//tempCons = EEPROMFifo.Cons;
-				while(1)
+				while(1)            //cheng: why need while(1) here??
 				{
-					if(ReadData(&tempCons,&tempdata))
+					if(ReadData(&tempCons,&tempdata))           //cheng: if you use tempCons here, and increment inside, multiple command of eDBAction_Read will keep increase tempCons, 
+                                                                //if then follow by a eDBAction_ClearRead, multiple increase of tempCons is 'saved' into Cons, which is incorrect
+                                                                //cheng: new comment: looks like you want the code behave this way, haha
 					{
 						data = osMailAlloc(dataReadqueue, 0);
 						//data->sensorData = tempdata.sensorData;
